@@ -113,11 +113,12 @@ export const TokenEditor: React.FC<TokenEditorProps> = ({ tokens, onUpdate }) =>
             <ColorInput label="Primary Hover" tokenKey="primaryHover" />
             <ColorInput label="Secondary" tokenKey="secondary" />
             <ColorInput label="Secondary Hover" tokenKey="secondaryHover" />
+            <ColorInput label="Error" tokenKey="error" />
+            <ColorInput label="Border" tokenKey="border" />
             <ColorInput label="Background" tokenKey="background" />
             <ColorInput label="Surface" tokenKey="surface" />
             <ColorInput label="Text" tokenKey="text" />
             <ColorInput label="Text Inverse" tokenKey="textInverse" />
-            <ColorInput label="Border" tokenKey="border" />
           </div>
         </section>
 

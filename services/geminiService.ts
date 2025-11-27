@@ -25,6 +25,7 @@ export async function generateThemeFromDescription(description: string): Promise
             primaryHover: { type: Type.STRING },
             secondary: { type: Type.STRING },
             secondaryHover: { type: Type.STRING },
+            error: { type: Type.STRING },
             background: { type: Type.STRING },
             surface: { type: Type.STRING },
             text: { type: Type.STRING },

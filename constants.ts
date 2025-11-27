@@ -6,6 +6,7 @@ export const DEFAULT_TOKENS: DesignTokens = {
   primaryHover: '#2563eb',
   secondary: '#64748b',
   secondaryHover: '#475569',
+  error: '#ef4444',
   background: '#ffffff',
   surface: '#f8fafc',
   text: '#0f172a',

@@ -4,6 +4,7 @@ export interface DesignTokens {
   primaryHover: string; // State color
   secondary: string;
   secondaryHover: string; // State color
+  error: string; // Validation color
   background: string;
   surface: string;
   text: string;
