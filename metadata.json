@@ -1,0 +1,5 @@
+{
+  "name": "Atomic DS Generator",
+  "description": "A framework-agnostic design system generator that creates atomic web components and native adapters from design tokens. Features deterministic code generation with AI-assisted theming.",
+  "requestFramePermissions": []
+}
