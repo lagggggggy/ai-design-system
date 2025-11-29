@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { DesignTokens, TokenGroup, TokenField } from '../types';
 import { generateThemeFromDescription } from '../services/geminiService';
 import { getTokenValue, setTokenValue, getScaleValues } from '../utils/tokenUtils';
-import { Wand2, Loader2, RefreshCw, Palette, Type, BoxSelect, Sparkles, AlertCircle, MousePointer2 } from 'lucide-react';
+import { Wand2, Loader2, Palette, Type, BoxSelect, Sparkles, AlertCircle, MousePointer2, Copy, Check, Eye, Code } from 'lucide-react';
 import { TOKEN_GROUPS } from '../constants';
 
 interface TokenEditorProps {
@@ -24,6 +24,8 @@ export const TokenEditor: React.FC<TokenEditorProps> = ({ tokens, onUpdate, isDa
   const [magicPrompt, setMagicPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [magicError, setMagicError] = useState('');
+  const [activeTab, setActiveTab] = useState<'visual' | 'json'>('visual');
+  const [copied, setCopied] = useState(false);
 
   const handleChange = (path: string, value: string) => {
     const newTokens = setTokenValue(tokens, path, value);
@@ -48,6 +50,12 @@ export const TokenEditor: React.FC<TokenEditorProps> = ({ tokens, onUpdate, isDa
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleCopyJson = () => {
+    navigator.clipboard.writeText(JSON.stringify(tokens, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   // --- Sub-Editors ---
@@ -210,32 +218,83 @@ export const TokenEditor: React.FC<TokenEditorProps> = ({ tokens, onUpdate, isDa
         </div>
       </div>
 
-      {/* Main Grid */}
-      <div className="max-w-5xl mx-auto w-full p-8 pb-20 space-y-12">
-        {TOKEN_GROUPS.map((group) => {
-          const Icon = ICONS[group.icon] || Palette;
-          return (
-            <section key={group.title} className="space-y-6">
-              <div className={`flex items-center gap-3 border-b pb-4 ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
-                 <div className={`p-2 rounded-lg shadow-sm border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} ${group.color}`}>
-                    <Icon className="w-5 h-5" />
-                 </div>
-                 <div>
-                   <h3 className={`text-lg font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>{group.title}</h3>
-                   <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{group.description}</p>
-                 </div>
-              </div>
-              
-              <div className={group.fields.some(f => f.type === 'scale') ? "space-y-6" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"}>
-                {group.fields.map((field) => (
-                  <div key={field.path} className={field.type === 'scale' ? 'w-full' : ''}>
-                     {renderField(field)}
+      {/* Tabs */}
+      <div className={`border-b ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+         <div className="max-w-5xl mx-auto px-8 flex gap-8">
+            <button 
+              onClick={() => setActiveTab('visual')}
+              className={`py-4 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors ${activeTab === 'visual' ? (isDark ? 'border-indigo-400 text-indigo-400' : 'border-indigo-600 text-indigo-600') : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              <Eye className="w-4 h-4" />
+              Visual Editor
+            </button>
+            <button 
+              onClick={() => setActiveTab('json')}
+              className={`py-4 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors ${activeTab === 'json' ? (isDark ? 'border-indigo-400 text-indigo-400' : 'border-indigo-600 text-indigo-600') : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              <Code className="w-4 h-4" />
+              JSON Source
+            </button>
+         </div>
+      </div>
+
+      {/* Content Area */}
+      <div className="max-w-5xl mx-auto w-full p-8 pb-20">
+        
+        {/* VISUAL EDITOR */}
+        {activeTab === 'visual' && (
+          <div className="space-y-12">
+            {TOKEN_GROUPS.map((group) => {
+              const Icon = ICONS[group.icon] || Palette;
+              return (
+                <section key={group.title} className="space-y-6">
+                  <div className={`flex items-center gap-3 border-b pb-4 ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+                    <div className={`p-2 rounded-lg shadow-sm border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} ${group.color}`}>
+                        <Icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className={`text-lg font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>{group.title}</h3>
+                      <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{group.description}</p>
+                    </div>
                   </div>
-                ))}
+                  
+                  <div className={group.fields.some(f => f.type === 'scale') ? "space-y-6" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"}>
+                    {group.fields.map((field) => (
+                      <div key={field.path} className={field.type === 'scale' ? 'w-full' : ''}>
+                        {renderField(field)}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        )}
+
+        {/* JSON SOURCE */}
+        {activeTab === 'json' && (
+           <div className="relative">
+              <div className="absolute top-4 right-4 z-10">
+                <button 
+                  onClick={handleCopyJson}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm ${
+                    isDark 
+                    ? 'bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700' 
+                    : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                  }`}
+                >
+                  {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                  {copied ? 'Copied!' : 'Copy JSON'}
+                </button>
               </div>
-            </section>
-          );
-        })}
+              <div className={`rounded-xl border overflow-hidden ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                <pre className={`p-6 text-xs font-mono overflow-auto leading-relaxed ${isDark ? 'text-blue-300' : 'text-blue-700'}`}>
+                  {JSON.stringify(tokens, null, 2)}
+                </pre>
+              </div>
+           </div>
+        )}
+
       </div>
     </div>
   );
