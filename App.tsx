@@ -31,6 +31,8 @@ function App() {
     downloadAllFiles(generatedFiles);
   };
 
+  const categories = ['atom', 'molecule', 'organism'] as const;
+
   return (
     <div className={`flex h-screen w-full transition-colors duration-300 ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
@@ -90,29 +92,36 @@ function App() {
             {/* Component Picker Sidebar */}
             <div className={`w-64 flex-none border-r overflow-y-auto ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
               <div className={`p-4 border-b sticky top-0 backdrop-blur-sm z-10 ${isDark ? 'border-slate-800 bg-slate-900/80' : 'border-slate-100 bg-white/80'}`}>
-                <h2 className={`text-xs font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Components</h2>
+                <h2 className={`text-xs font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Library</h2>
               </div>
-              <div className="p-2 space-y-1">
-                {SUPPORTED_COMPONENTS.map(c => (
-                  <button
-                    key={c.id}
-                    onClick={() => setSelectedComponent(c.id)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between group ${
-                      selectedComponent === c.id 
-                        ? (isDark ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-50 text-indigo-700 font-medium') 
-                        : (isDark ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-600 hover:bg-slate-50')
-                    }`}
-                  >
-                    {c.name}
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
-                      c.type === 'atom' 
-                        ? (isDark ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-100 text-blue-700') 
-                        : (isDark ? 'bg-purple-500/20 text-purple-300' : 'bg-purple-100 text-purple-700')
-                    }`}>
-                      {c.type}
-                    </span>
-                  </button>
-                ))}
+              <div className="py-2">
+                {categories.map(category => {
+                  const categoryComponents = SUPPORTED_COMPONENTS.filter(c => c.type === category);
+                  if (categoryComponents.length === 0) return null;
+                  
+                  return (
+                    <div key={category} className="mb-4">
+                      <h3 className={`px-4 py-2 text-[10px] font-bold uppercase tracking-wider opacity-60 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                        {category}s
+                      </h3>
+                      <div className="px-2 space-y-1">
+                        {categoryComponents.map(c => (
+                          <button
+                            key={c.id}
+                            onClick={() => setSelectedComponent(c.id)}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between group ${
+                              selectedComponent === c.id 
+                                ? (isDark ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-50 text-indigo-700 font-medium') 
+                                : (isDark ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-600 hover:bg-slate-50')
+                            }`}
+                          >
+                            {c.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

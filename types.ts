@@ -164,6 +164,29 @@ export interface TokenGroup {
   fields: TokenField[];
 }
 
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'ds-badge': any;
+      'ds-radio': any;
+      'ds-radio-group': any;
+      'ds-alert': any;
+      'ds-button': any;
+      'ds-input': any;
+      'ds-checkbox': any;
+      'ds-switch': any;
+      'ds-checkbox-group': any;
+      'ds-card': any;
+      'ds-avatar': any;
+      'ds-spinner': any;
+      'ds-divider': any;
+      'ds-text': any;
+      'ds-heading': any;
+      'ds-link': any;
+    }
+  }
+}
+
 declare global {
   namespace JSX {
     interface IntrinsicElements {
