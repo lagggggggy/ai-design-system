@@ -1,34 +1,127 @@
+export interface W3CToken {
+  $value: string;
+  $type: string;
+  $description?: string;
+}
+
+export interface W3CColorScale {
+  50: W3CToken;
+  100: W3CToken;
+  200: W3CToken;
+  300: W3CToken;
+  400: W3CToken;
+  500: W3CToken;
+  600: W3CToken;
+  700: W3CToken;
+  800: W3CToken;
+  900: W3CToken;
+  950: W3CToken;
+  DEFAULT: W3CToken; // Maps to the base name (e.g. --ds-color-primary)
+}
+
 export interface DesignTokens {
-  // Colors
-  primary: string;
-  primaryHover: string; // State color
-  secondary: string;
-  secondaryHover: string; // State color
-  error: string; // Validation color
-  background: string;
-  surface: string;
-  text: string;
-  textInverse: string;
-  border: string;
+  color: {
+    primary: W3CColorScale;
+    secondary: W3CColorScale;
+    neutral: W3CColorScale;
+    
+    // Semantics (Can be aliases or direct values)
+    background: W3CToken;
+    surface: W3CToken;
+    surfaceHighlight: W3CToken;
+    text: W3CToken;
+    textDim: W3CToken;
+    textInverse: W3CToken;
+    border: W3CToken;
 
-  // Geometry
-  borderRadiusSmall: string;
-  borderRadiusMedium: string;
-  borderRadiusLarge: string;
-  borderWidth: string;
-  spacingUnit: string;
+    // Status Colors - Now full scales
+    error: W3CColorScale;
+    success: W3CColorScale;
+    warning: W3CColorScale;
+    info: W3CColorScale;
+    
+    // Component specific (Legacy support for templates using these specific semantic names)
+    primaryHover: W3CToken; 
+    secondaryHover: W3CToken;
+  };
+  
+  geometry: {
+    spacing: {
+      base: W3CToken;
+    };
+    border: {
+      width: W3CToken;
+    };
+    radius: {
+      sm: W3CToken;
+      md: W3CToken;
+      lg: W3CToken;
+    };
+  };
 
-  // Typography
-  fontFamily: string;
-  fontSizeSm: string;
-  fontSizeMd: string;
-  fontSizeLg: string;
-  fontWeightNormal: string;
-  fontWeightBold: string;
+  typography: {
+    family: {
+      base: W3CToken;
+      mono: W3CToken;
+    };
+    size: {
+      xs: W3CToken;
+      sm: W3CToken;
+      md: W3CToken;
+      lg: W3CToken;
+      xl: W3CToken;
+      '2xl': W3CToken;
+      '3xl': W3CToken;
+      '4xl': W3CToken;
+    };
+    weight: {
+      light: W3CToken;
+      normal: W3CToken;
+      medium: W3CToken;
+      semibold: W3CToken;
+      bold: W3CToken;
+      100: W3CToken;
+      200: W3CToken;
+      300: W3CToken;
+      400: W3CToken;
+      500: W3CToken;
+      600: W3CToken;
+      700: W3CToken;
+      800: W3CToken;
+      900: W3CToken;
+    };
+    lineHeight: {
+      tight: W3CToken;
+      normal: W3CToken;
+      relaxed: W3CToken;
+    };
+    variants: {
+      h1: TypographyVariant;
+      h2: TypographyVariant;
+      h3: TypographyVariant;
+      h4: TypographyVariant;
+      h5: TypographyVariant;
+      h6: TypographyVariant;
+      subtitle1: TypographyVariant;
+      subtitle2: TypographyVariant;
+      body1: TypographyVariant;
+      body2: TypographyVariant;
+      caption: TypographyVariant;
+    }
+  };
 
-  // Effects
-  shadowSm: string;
-  shadowMd: string;
+  effect: {
+    shadow: {
+      sm: W3CToken;
+      md: W3CToken;
+    };
+  };
+}
+
+export interface TypographyVariant {
+  fontSize: W3CToken;
+  fontWeight: W3CToken;
+  lineHeight: W3CToken;
 }
 
 export interface GeneratedFile {
@@ -40,7 +133,7 @@ export interface GeneratedFile {
 
 export type GenerationStrategy = 'web-component' | 'native-react' | 'native-angular';
 
-export type ComponentType = 'button' | 'checkbox' | 'checkbox-group' | 'input' | 'card';
+export type ComponentType = 'button' | 'checkbox' | 'checkbox-group' | 'input' | 'card' | 'badge' | 'switch' | 'radio' | 'radio-group' | 'alert' | 'avatar' | 'spinner' | 'divider' | 'text' | 'heading' | 'link';
 
 export interface ComponentDefinition {
   id: ComponentType;
@@ -52,4 +145,42 @@ export interface ComponentDefinition {
 export interface GeneratorOutput {
   strategy: GenerationStrategy;
   files: GeneratedFile[];
+}
+
+export interface TokenField {
+  label: string;
+  path: string;
+  type: 'color' | 'text' | 'scale' | 'alias';
+  description?: string;
+}
+
+export interface TokenGroup {
+  title: string;
+  icon: string;
+  color: string;
+  description?: string;
+  fields: TokenField[];
+}
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'ds-badge': any;
+      'ds-radio': any;
+      'ds-radio-group': any;
+      'ds-alert': any;
+      'ds-button': any;
+      'ds-input': any;
+      'ds-checkbox': any;
+      'ds-switch': any;
+      'ds-checkbox-group': any;
+      'ds-card': any;
+      'ds-avatar': any;
+      'ds-spinner': any;
+      'ds-divider': any;
+      'ds-text': any;
+      'ds-heading': any;
+      'ds-link': any;
+    }
+  }
 }

@@ -1,20 +1,33 @@
 import React, { useState } from 'react';
-import { DesignTokens } from '../types';
+import { DesignTokens, TokenGroup, TokenField } from '../types';
 import { generateThemeFromDescription } from '../services/geminiService';
-import { Wand2, Loader2, RefreshCw, Palette, Type, BoxSelect, Sparkles } from 'lucide-react';
+import { getTokenValue, setTokenValue, getScaleValues } from '../utils/tokenUtils';
+import { Wand2, Loader2, RefreshCw, Palette, Type, BoxSelect, Sparkles, AlertCircle, MousePointer2 } from 'lucide-react';
+import { TOKEN_GROUPS } from '../constants';
 
 interface TokenEditorProps {
   tokens: DesignTokens;
   onUpdate: (tokens: DesignTokens) => void;
+  isDark: boolean;
 }
 
-export const TokenEditor: React.FC<TokenEditorProps> = ({ tokens, onUpdate }) => {
+const ICONS: Record<string, any> = {
+  Palette,
+  Type,
+  BoxSelect,
+  Sparkles,
+  AlertCircle,
+  MousePointer2
+};
+
+export const TokenEditor: React.FC<TokenEditorProps> = ({ tokens, onUpdate, isDark }) => {
   const [magicPrompt, setMagicPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [magicError, setMagicError] = useState('');
 
-  const handleChange = (key: keyof DesignTokens, value: string) => {
-    onUpdate({ ...tokens, [key]: value });
+  const handleChange = (path: string, value: string) => {
+    const newTokens = setTokenValue(tokens, path, value);
+    onUpdate(newTokens);
   };
 
   const handleMagicGenerate = async () => {
@@ -37,136 +50,192 @@ export const TokenEditor: React.FC<TokenEditorProps> = ({ tokens, onUpdate }) =>
     }
   };
 
-  const ColorInput = ({ label, tokenKey }: { label: string, tokenKey: keyof DesignTokens }) => (
-    <div className="flex flex-col gap-1">
-      <label className="text-xs text-slate-500">{label}</label>
-      <div className="flex items-center gap-2">
-        <input
-           type="text"
-           value={tokens[tokenKey]}
-           onChange={(e) => handleChange(tokenKey, e.target.value)}
-           className="flex-1 text-xs font-mono border border-slate-300 rounded px-2 py-1 uppercase bg-white text-slate-900"
-        />
-        <input
-          type="color"
-          value={tokens[tokenKey]}
-          onChange={(e) => handleChange(tokenKey, e.target.value)}
-          className="w-6 h-6 rounded cursor-pointer border-0 p-0 overflow-hidden"
+  // --- Sub-Editors ---
+
+  const PaletteEditor = ({ label, path }: { label: string, path: string }) => {
+    const scale = getScaleValues(tokens, path);
+    // scale keys: 50, 100 ... 950, DEFAULT
+    const sortedKeys = Object.keys(scale)
+      .filter(k => k !== 'DEFAULT')
+      .sort((a, b) => parseInt(a) - parseInt(b));
+
+    return (
+      <div className={`p-4 rounded-lg border shadow-sm ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+        <h4 className={`text-sm font-bold mb-3 flex justify-between items-center ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+          {label}
+          <div className="flex gap-1">
+             {sortedKeys.map(k => (
+                <div key={k} className="w-4 h-4 rounded-sm" style={{ backgroundColor: scale[k] }} title={k}></div>
+             ))}
+          </div>
+        </h4>
+        <div className="grid grid-cols-6 gap-3">
+          {sortedKeys.map(key => (
+            <div key={key} className="flex flex-col gap-1">
+               <div 
+                 className={`w-full h-8 rounded border shadow-inner ${isDark ? 'border-slate-600' : 'border-slate-100'}`} 
+                 style={{ backgroundColor: scale[key] }}
+               />
+               <div className="flex flex-col">
+                  <span className={`text-[10px] font-mono ${isDark ? 'text-slate-400' : 'text-slate-400'}`}>{key}</span>
+                  <input
+                    type="text"
+                    value={scale[key]}
+                    onChange={(e) => handleChange(`${path}.${key}`, e.target.value)}
+                    className={`text-[10px] font-mono border-b border-transparent hover:border-slate-300 focus:border-blue-500 outline-none bg-transparent w-full ${isDark ? 'text-slate-300' : 'text-slate-600'}`}
+                  />
+               </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const AliasEditor = ({ label, path }: { label: string, path: string }) => {
+    const val = getTokenValue(tokens, path);
+    // Check if it's an alias
+    const isAlias = val.startsWith('{') && val.endsWith('}');
+    
+    return (
+      <div className="flex flex-col gap-1">
+        <label className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{label}</label>
+        <div className="flex items-center gap-2">
+           <input
+             type="text"
+             value={val}
+             onChange={(e) => handleChange(path, e.target.value)}
+             className={`flex-1 text-sm border rounded px-2 py-1.5 outline-none font-mono ${
+               isAlias 
+                 ? (isDark ? 'text-purple-300 bg-purple-900/20 border-purple-700/50' : 'text-purple-600 bg-purple-50 border-purple-200')
+                 : (isDark ? 'text-slate-200 bg-slate-800 border-slate-600' : 'text-slate-900 border-slate-300')
+             }`}
+          />
+          {!isAlias && (
+            <input
+              type="color"
+              value={val}
+              onChange={(e) => handleChange(path, e.target.value)}
+              className="w-8 h-8 rounded cursor-pointer border-0 p-0 overflow-hidden shrink-0"
+            />
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const SimpleColorInput = ({ label, path }: { label: string, path: string }) => {
+    const val = getTokenValue(tokens, path);
+    return (
+      <div className="flex flex-col gap-1">
+        <label className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{label}</label>
+        <div className="flex items-center gap-2">
+          <input
+             type="text"
+             value={val}
+             onChange={(e) => handleChange(path, e.target.value)}
+             className={`flex-1 text-sm font-mono border rounded px-2 py-1.5 uppercase outline-none focus:ring-1 focus:ring-blue-500 ${isDark ? 'bg-slate-800 border-slate-600 text-slate-200' : 'bg-white border-slate-300 text-slate-900'}`}
+          />
+          <input
+            type="color"
+            value={val}
+            onChange={(e) => handleChange(path, e.target.value)}
+            className="w-8 h-8 rounded cursor-pointer border-0 p-0 overflow-hidden shrink-0"
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const TextInput = ({ label, path }: { label: string, path: string }) => {
+    const val = getTokenValue(tokens, path);
+    return (
+      <div>
+        <label className={`text-xs block mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{label}</label>
+        <input 
+          type="text"
+          value={val}
+          onChange={(e) => handleChange(path, e.target.value)}
+          className={`w-full text-sm border rounded p-1.5 outline-none focus:ring-1 focus:ring-blue-500 ${isDark ? 'bg-slate-800 border-slate-600 text-slate-200' : 'bg-white border-slate-300 text-slate-900'}`}
         />
       </div>
-    </div>
-  );
+    );
+  };
 
-  const TextInput = ({ label, tokenKey }: { label: string, tokenKey: keyof DesignTokens }) => (
-    <div>
-      <label className="text-xs text-slate-500 block mb-1">{label}</label>
-      <input 
-        type="text"
-        value={tokens[tokenKey]}
-        onChange={(e) => handleChange(tokenKey, e.target.value)}
-        className="w-full text-xs border border-slate-300 rounded p-1.5 bg-white text-slate-900"
-      />
-    </div>
-  );
+  const renderField = (field: TokenField) => {
+    switch(field.type) {
+      case 'scale': return <PaletteEditor key={field.path} label={field.label} path={field.path} />;
+      case 'alias': return <AliasEditor key={field.path} label={field.label} path={field.path} />;
+      case 'color': return <SimpleColorInput key={field.path} label={field.label} path={field.path} />;
+      default: return <TextInput key={field.path} label={field.label} path={field.path} />;
+    }
+  };
 
   return (
-    <div className="flex flex-col h-full bg-white border-r border-slate-200 w-80 overflow-y-auto">
-      <div className="p-4 border-b border-slate-200">
-        <h2 className="text-lg font-bold flex items-center gap-2">
-          <span className="w-2 h-6 bg-blue-600 rounded-full"></span>
-          Tokens
-        </h2>
-      </div>
-
-      <div className="p-4 border-b border-slate-100 bg-slate-50">
-        <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-2">
-          <Wand2 className="w-3 h-3 text-purple-600" />
-          Magic Theme
-        </label>
-        <div className="flex gap-2">
-          <input 
-            type="text" 
-            className="flex-1 text-sm border border-slate-300 rounded px-2 py-1 focus:ring-1 focus:ring-purple-500 bg-white"
-            placeholder="e.g. 'Cyberpunk'"
-            value={magicPrompt}
-            onChange={(e) => setMagicPrompt(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleMagicGenerate()}
-          />
-          <button 
-            onClick={handleMagicGenerate}
-            disabled={isGenerating || !magicPrompt}
-            className="bg-purple-600 text-white p-2 rounded hover:bg-purple-700 disabled:opacity-50"
-          >
-            {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-          </button>
+    <div className={`flex flex-col h-full overflow-y-auto transition-colors ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
+      
+      {/* Magic Theme Header */}
+      <div className={`border-b p-8 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+        <div className="max-w-4xl mx-auto">
+          <h1 className={`text-3xl font-bold mb-2 ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>Design System Studio</h1>
+          <p className={`mb-6 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Define your atomic tokens, semantic aliases, and brand palettes.</p>
+          
+          <div className={`p-6 rounded-xl border flex items-center gap-4 ${isDark ? 'bg-indigo-900/20 border-indigo-500/30' : 'bg-gradient-to-r from-violet-50 to-indigo-50 border-indigo-100'}`}>
+             <div className={`p-3 rounded-lg shadow-sm ${isDark ? 'bg-indigo-500/20 text-indigo-300' : 'bg-white text-indigo-600'}`}>
+               <Wand2 className="w-6 h-6" />
+             </div>
+             <div className="flex-1">
+               <label className={`text-sm font-bold block mb-1 ${isDark ? 'text-indigo-200' : 'text-indigo-900'}`}>Magic Theme Generator</label>
+               <p className={`text-xs mb-3 ${isDark ? 'text-indigo-300' : 'text-indigo-700'}`}>Describe your brand (e.g., "Modern fintech with emerald greens and slate grays")</p>
+               <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  className={`flex-1 text-sm border rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm ${isDark ? 'bg-slate-900 border-slate-700 text-white placeholder-slate-500' : 'bg-white border-indigo-200 text-slate-900'}`}
+                  placeholder="Describe your theme..."
+                  value={magicPrompt}
+                  onChange={(e) => setMagicPrompt(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleMagicGenerate()}
+                />
+                <button 
+                  onClick={handleMagicGenerate}
+                  disabled={isGenerating || !magicPrompt}
+                  className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors font-medium flex items-center gap-2"
+                >
+                  {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generate'}
+                </button>
+              </div>
+              {magicError && <p className="text-xs text-red-500 mt-2">{magicError}</p>}
+             </div>
+          </div>
         </div>
       </div>
 
-      <div className="p-4 space-y-8 pb-12">
-        {/* Colors */}
-        <section>
-          <h3 className="text-sm font-semibold mb-3 text-slate-800 flex items-center gap-2">
-            <Palette className="w-4 h-4 text-blue-500" /> Palette & States
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <ColorInput label="Primary" tokenKey="primary" />
-            <ColorInput label="Primary Hover" tokenKey="primaryHover" />
-            <ColorInput label="Secondary" tokenKey="secondary" />
-            <ColorInput label="Secondary Hover" tokenKey="secondaryHover" />
-            <ColorInput label="Error" tokenKey="error" />
-            <ColorInput label="Border" tokenKey="border" />
-            <ColorInput label="Background" tokenKey="background" />
-            <ColorInput label="Surface" tokenKey="surface" />
-            <ColorInput label="Text" tokenKey="text" />
-            <ColorInput label="Text Inverse" tokenKey="textInverse" />
-          </div>
-        </section>
-
-        {/* Geometry */}
-        <section>
-          <h3 className="text-sm font-semibold mb-3 text-slate-800 flex items-center gap-2">
-            <BoxSelect className="w-4 h-4 text-green-500" /> Geometry
-          </h3>
-          <div className="space-y-3">
-             <div className="grid grid-cols-2 gap-3">
-                <TextInput label="Base Spacing" tokenKey="spacingUnit" />
-                <TextInput label="Border Width" tokenKey="borderWidth" />
-             </div>
-             <TextInput label="Radius Small" tokenKey="borderRadiusSmall" />
-             <TextInput label="Radius Medium" tokenKey="borderRadiusMedium" />
-             <TextInput label="Radius Large" tokenKey="borderRadiusLarge" />
-          </div>
-        </section>
-
-        {/* Typography */}
-        <section>
-          <h3 className="text-sm font-semibold mb-3 text-slate-800 flex items-center gap-2">
-            <Type className="w-4 h-4 text-orange-500" /> Typography
-          </h3>
-          <div className="space-y-3">
-             <TextInput label="Font Family" tokenKey="fontFamily" />
-             <div className="grid grid-cols-3 gap-2">
-                <TextInput label="Size Sm" tokenKey="fontSizeSm" />
-                <TextInput label="Size Md" tokenKey="fontSizeMd" />
-                <TextInput label="Size Lg" tokenKey="fontSizeLg" />
-             </div>
-             <div className="grid grid-cols-2 gap-3">
-                <TextInput label="Weight Norm" tokenKey="fontWeightNormal" />
-                <TextInput label="Weight Bold" tokenKey="fontWeightBold" />
-             </div>
-          </div>
-        </section>
-
-        {/* Effects */}
-        <section>
-          <h3 className="text-sm font-semibold mb-3 text-slate-800 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-indigo-500" /> Effects
-          </h3>
-          <div className="space-y-3">
-             <TextInput label="Shadow Sm" tokenKey="shadowSm" />
-             <TextInput label="Shadow Md" tokenKey="shadowMd" />
-          </div>
-        </section>
+      {/* Main Grid */}
+      <div className="max-w-5xl mx-auto w-full p-8 pb-20 space-y-12">
+        {TOKEN_GROUPS.map((group) => {
+          const Icon = ICONS[group.icon] || Palette;
+          return (
+            <section key={group.title} className="space-y-6">
+              <div className={`flex items-center gap-3 border-b pb-4 ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+                 <div className={`p-2 rounded-lg shadow-sm border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} ${group.color}`}>
+                    <Icon className="w-5 h-5" />
+                 </div>
+                 <div>
+                   <h3 className={`text-lg font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>{group.title}</h3>
+                   <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{group.description}</p>
+                 </div>
+              </div>
+              
+              <div className={group.fields.some(f => f.type === 'scale') ? "space-y-6" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"}>
+                {group.fields.map((field) => (
+                  <div key={field.path} className={field.type === 'scale' ? 'w-full' : ''}>
+                     {renderField(field)}
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })}
       </div>
     </div>
   );
