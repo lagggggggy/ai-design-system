@@ -1,74 +1,87 @@
+
 import React from 'react';
 
 export const TypographyPreview: React.FC = () => {
   return (
-    <div className="flex flex-col gap-8 w-full items-start">
+    <div className="flex flex-col gap-12 w-full max-w-4xl">
       
       {/* Headings */}
       <div className="flex flex-col gap-4 w-full">
          <h4 className="text-xs font-bold uppercase tracking-wider opacity-60" style={{ color: 'var(--ds-color-text)' }}>Headings</h4>
-         <div className="flex flex-col gap-4 p-4 border rounded" style={{ borderColor: 'var(--ds-color-border)' }}>
-            <ds-heading variant="h1">Heading 1</ds-heading>
-            <ds-heading variant="h2">Heading 2</ds-heading>
-            <ds-heading variant="h3">Heading 3</ds-heading>
-            <ds-heading variant="h4">Heading 4</ds-heading>
-            <ds-heading variant="h5">Heading 5</ds-heading>
-            <ds-heading variant="h6">Heading 6</ds-heading>
+         <div className="flex flex-col gap-6 p-8 border rounded-xl" style={{ borderColor: 'var(--ds-color-border)' }}>
+            <div className="flex items-baseline gap-4 border-b pb-4" style={{borderColor: 'var(--ds-color-border)'}}>
+              <span className="text-xs w-16 opacity-50 font-mono">H1</span>
+              <ds-typography variant="h1">The quick brown fox</ds-typography>
+            </div>
+            <div className="flex items-baseline gap-4 border-b pb-4" style={{borderColor: 'var(--ds-color-border)'}}>
+              <span className="text-xs w-16 opacity-50 font-mono">H2</span>
+              <ds-typography variant="h2">Jumps over the lazy dog</ds-typography>
+            </div>
+            <div className="flex items-baseline gap-4 border-b pb-4" style={{borderColor: 'var(--ds-color-border)'}}>
+              <span className="text-xs w-16 opacity-50 font-mono">H3</span>
+              <ds-typography variant="h3">System Typography</ds-typography>
+            </div>
+            <div className="flex items-baseline gap-4">
+              <span className="text-xs w-16 opacity-50 font-mono">H4</span>
+              <ds-typography variant="h4">Design Tokens</ds-typography>
+            </div>
          </div>
       </div>
 
-      {/* Subtitles */}
-      <div className="flex flex-col gap-4 w-full">
-         <h4 className="text-xs font-bold uppercase tracking-wider opacity-60" style={{ color: 'var(--ds-color-text)' }}>Subtitles</h4>
-         <div className="flex flex-col gap-4 p-4 border rounded" style={{ borderColor: 'var(--ds-color-border)' }}>
-            <ds-heading variant="subtitle1">Subtitle 1: The quick brown fox jumps over the lazy dog</ds-heading>
-            <ds-heading variant="subtitle2">Subtitle 2: The quick brown fox jumps over the lazy dog</ds-heading>
-         </div>
-      </div>
+      {/* Subtitles & Body */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="flex flex-col gap-4">
+           <h4 className="text-xs font-bold uppercase tracking-wider opacity-60" style={{ color: 'var(--ds-color-text)' }}>Subtitles</h4>
+           <div className="flex flex-col gap-4 p-6 border rounded-xl" style={{ borderColor: 'var(--ds-color-border)' }}>
+              <div>
+                <span className="text-[10px] opacity-50 block mb-1">Subtitle 1</span>
+                <ds-typography variant="subtitle1">A modular approach to design systems</ds-typography>
+              </div>
+              <div>
+                <span className="text-[10px] opacity-50 block mb-1">Subtitle 2</span>
+                <ds-typography variant="subtitle2">Consistent cross-platform UI components</ds-typography>
+              </div>
+           </div>
+        </div>
 
-      {/* Body Copy */}
-      <div className="flex flex-col gap-4 w-full">
-         <h4 className="text-xs font-bold uppercase tracking-wider opacity-60" style={{ color: 'var(--ds-color-text)' }}>Body Text</h4>
-         <div className="flex flex-col gap-4 p-4 border rounded" style={{ borderColor: 'var(--ds-color-border)' }}>
-            <ds-text variant="body1">
-              <strong>Body 1:</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </ds-text>
-            <ds-text variant="body2">
-              <strong>Body 2:</strong> Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            </ds-text>
-            <ds-text variant="caption">
-              <strong>Caption:</strong> Duis aute irure dolor in reprehenderit in voluptate velit esse.
-            </ds-text>
-         </div>
-      </div>
-
-      {/* Colors */}
-      <div className="flex flex-col gap-4 w-full">
-         <h4 className="text-xs font-bold uppercase tracking-wider opacity-60" style={{ color: 'var(--ds-color-text)' }}>Semantic Colors</h4>
-         <div className="flex flex-col gap-2 p-4 border rounded" style={{ borderColor: 'var(--ds-color-border)' }}>
-            <ds-text variant="body2" color="primary">Primary Text Color</ds-text>
-            <ds-text variant="body2" color="secondary">Secondary Text Color</ds-text>
-            <ds-text variant="body2" color="dim">Dimmed Text Color</ds-text>
-            <ds-text variant="body2" color="error">Error Text Color</ds-text>
-            <ds-text variant="body2" color="success">Success Text Color</ds-text>
-         </div>
+        <div className="flex flex-col gap-4">
+           <h4 className="text-xs font-bold uppercase tracking-wider opacity-60" style={{ color: 'var(--ds-color-text)' }}>Body</h4>
+           <div className="flex flex-col gap-4 p-6 border rounded-xl" style={{ borderColor: 'var(--ds-color-border)' }}>
+              <div>
+                <span className="text-[10px] opacity-50 block mb-1">Body 1</span>
+                <ds-typography variant="body1">
+                  Design tokens are the visual design atoms of the design system — specifically, they are named entities that store visual design attributes.
+                </ds-typography>
+              </div>
+              <div>
+                <span className="text-[10px] opacity-50 block mb-1">Body 2</span>
+                <ds-typography variant="body2">
+                  We use them in place of hard-coded values (such as hex values for color or pixel values for spacing) in order to maintain a scalable and consistent visual system.
+                </ds-typography>
+              </div>
+              <div>
+                <span className="text-[10px] opacity-50 block mb-1">Caption</span>
+                <ds-typography variant="caption">
+                  Figure 1.1: Token Architecture
+                </ds-typography>
+              </div>
+           </div>
+        </div>
       </div>
 
       <style>{`
-        ds-heading, ds-text { display: block; font-family: var(--ds-typography-family-base); color: var(--ds-color-text); }
-        /* Simulation if WC not loaded */
-        ds-heading:not(:defined), ds-text:not(:defined) { display: block; margin-bottom: 0.5em; }
+        ds-typography { display: block; font-family: var(--ds-typography-family-base); color: var(--ds-color-text); }
         
-        ds-heading[variant="h1"] { font-size: var(--ds-typography-variants-h1-fontSize); font-weight: bold; }
-        ds-heading[variant="h2"] { font-size: var(--ds-typography-variants-h2-fontSize); font-weight: bold; }
-        ds-heading[variant="h3"] { font-size: var(--ds-typography-variants-h3-fontSize); font-weight: 600; }
-        ds-heading[variant="h4"] { font-size: var(--ds-typography-variants-h4-fontSize); font-weight: 600; }
-        ds-heading[variant="subtitle1"] { font-size: var(--ds-typography-variants-subtitle1-fontSize); }
+        ds-typography[variant="h1"] { font-size: var(--ds-typography-variants-h1-fontSize); font-weight: var(--ds-typography-variants-h1-fontWeight); line-height: var(--ds-typography-variants-h1-lineHeight); }
+        ds-typography[variant="h2"] { font-size: var(--ds-typography-variants-h2-fontSize); font-weight: var(--ds-typography-variants-h2-fontWeight); line-height: var(--ds-typography-variants-h2-lineHeight); }
+        ds-typography[variant="h3"] { font-size: var(--ds-typography-variants-h3-fontSize); font-weight: var(--ds-typography-variants-h3-fontWeight); line-height: var(--ds-typography-variants-h3-lineHeight); }
+        ds-typography[variant="h4"] { font-size: var(--ds-typography-variants-h4-fontSize); font-weight: var(--ds-typography-variants-h4-fontWeight); line-height: var(--ds-typography-variants-h4-lineHeight); }
+        ds-typography[variant="subtitle1"] { font-size: var(--ds-typography-variants-subtitle1-fontSize); font-weight: var(--ds-typography-variants-subtitle1-fontWeight); line-height: var(--ds-typography-variants-subtitle1-lineHeight); }
+        ds-typography[variant="subtitle2"] { font-size: var(--ds-typography-variants-subtitle2-fontSize); font-weight: var(--ds-typography-variants-subtitle2-fontWeight); line-height: var(--ds-typography-variants-subtitle2-lineHeight); }
         
-        ds-text[variant="body1"] { font-size: var(--ds-typography-variants-body1-fontSize); }
-        ds-text[variant="body2"] { font-size: var(--ds-typography-variants-body2-fontSize); }
-        ds-text[variant="caption"] { font-size: var(--ds-typography-variants-caption-fontSize); opacity: 0.8; }
-        ds-text[color="primary"] { color: var(--ds-color-primary); }
+        ds-typography[variant="body1"] { font-size: var(--ds-typography-variants-body1-fontSize); font-weight: var(--ds-typography-variants-body1-fontWeight); line-height: var(--ds-typography-variants-body1-lineHeight); }
+        ds-typography[variant="body2"] { font-size: var(--ds-typography-variants-body2-fontSize); font-weight: var(--ds-typography-variants-body2-fontWeight); line-height: var(--ds-typography-variants-body2-lineHeight); }
+        ds-typography[variant="caption"] { font-size: var(--ds-typography-variants-caption-fontSize); font-weight: var(--ds-typography-variants-caption-fontWeight); line-height: var(--ds-typography-variants-caption-lineHeight); opacity: 0.8; }
       `}</style>
     </div>
   );

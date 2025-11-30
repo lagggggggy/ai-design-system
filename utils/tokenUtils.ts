@@ -1,15 +1,18 @@
+
 import { DesignTokens, W3CToken } from '../types';
 
 /**
  * Resolves W3C aliases like "{color.primary.500}" to CSS var "--ds-color-primary-500"
  */
-function resolveAliasToVar(value: string): string {
-  if (value.startsWith('{') && value.endsWith('}')) {
-    const path = value.slice(1, -1); // remove { and }
+function resolveAliasToVar(value: string | number | undefined | null): string {
+  if (value === undefined || value === null) return '';
+  const strValue = String(value);
+  if (strValue.startsWith('{') && strValue.endsWith('}')) {
+    const path = strValue.slice(1, -1); // remove { and }
     const varName = `--ds-${path.replace(/\./g, '-')}`;
     return `var(${varName})`;
   }
-  return value;
+  return strValue;
 }
 
 /**
@@ -23,6 +26,8 @@ export function flattenTokensToCSS(tokens: DesignTokens): React.CSSProperties {
   const cssVars: Record<string, string> = {};
 
   const traverse = (obj: any, prefix: string) => {
+    if (!obj || typeof obj !== 'object') return;
+
     for (const key in obj) {
       // Handle meta keys
       if (key === '$value') {
@@ -49,7 +54,7 @@ export function flattenTokensToCSS(tokens: DesignTokens): React.CSSProperties {
         // e.g. color.primary.DEFAULT maps to --ds-color-primary
         if (key === 'DEFAULT') {
             const val = obj[key].$value;
-            if (val) {
+            if (val !== undefined && val !== null) {
                 cssVars[`--ds-${prefix}`] = resolveAliasToVar(val);
             }
             continue; 
@@ -76,7 +81,8 @@ export function getTokenValue(tokens: any, path: string): string {
     current = current[part];
   }
   // Return the raw $value, or empty if it's an intermediate node
-  return current?.$value || '';
+  const val = current?.$value;
+  return val === undefined || val === null ? '' : String(val);
 }
 
 /**
@@ -114,10 +120,35 @@ export function getScaleValues(tokens: any, path: string): Record<string, string
   const result: Record<string, string> = {};
   if (current) {
     Object.keys(current).forEach(k => {
-      if (current[k].$value) {
-        result[k] = current[k].$value;
+      if (current[k] && current[k].$value !== undefined) {
+        result[k] = String(current[k].$value);
       }
     });
   }
   return result;
+}
+
+/**
+ * Applies standard Dark Mode semantic overrides to a token set.
+ * This preserves palettes but inverts the semantic aliases.
+ */
+export function applyDarkModeOverrides(tokens: DesignTokens): DesignTokens {
+  const newTokens = JSON.parse(JSON.stringify(tokens));
+  
+  if (newTokens.color) {
+    newTokens.color.background = { $value: '{color.neutral.950}', $type: 'color' };
+    newTokens.color.surface = { $value: '{color.neutral.900}', $type: 'color' };
+    newTokens.color.surfaceHighlight = { $value: '{color.neutral.800}', $type: 'color' };
+    newTokens.color.text = { $value: '{color.neutral.50}', $type: 'color' };
+    newTokens.color.textDim = { $value: '{color.neutral.400}', $type: 'color' };
+    newTokens.color.textInverse = { $value: '{color.neutral.950}', $type: 'color' };
+    newTokens.color.border = { $value: '{color.neutral.700}', $type: 'color' };
+  }
+  
+  if (newTokens.effect && newTokens.effect.shadow) {
+    newTokens.effect.shadow.sm = { $value: '0 1px 2px 0 rgb(0 0 0 / 0.5)', $type: 'shadow' };
+    newTokens.effect.shadow.md = { $value: '0 4px 6px -1px rgb(0 0 0 / 0.5)', $type: 'shadow' };
+  }
+
+  return newTokens;
 }

@@ -1,1098 +1,198 @@
+
 import { DesignTokens, ComponentType, GeneratedFile } from '../types';
 
-export const nativeAngularTemplates: Record<ComponentType, (tokens: DesignTokens) => GeneratedFile[]> = {
+const createAngularFile = (
+  className: string, 
+  selector: string, 
+  template: string, 
+  styles: string, 
+  logic: string = ''
+): GeneratedFile[] => [
+  {
+    fileName: `${className.toLowerCase()}.component.ts`,
+    language: 'typescript',
+    description: `Angular ${className} Component`,
+    content: `
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: '${selector}',
+  standalone: true,
+  imports: [CommonModule${logic.includes('IconComponent') ? ', IconComponent' : ''}],
+  template: \`
+${template.trim()}
+  \`,
+  styles: [\`
+${styles.trim()}
+  \`]
+})
+export class ${className}Component {
+${logic.replace(', IconComponent', '').trim()}
+}
+`.trim()
+  }
+];
+
+export const nativeAngularTemplates: Partial<Record<ComponentType, (tokens: DesignTokens) => GeneratedFile[]>> = {
+  // ... (Keep existing simple templates)
+  
   button: () => [
     {
-      fileName: 'button.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `button {
-  font-family: var(--ds-typography-family-base);
-  border-radius: var(--ds-geometry-radius-md);
-  border: var(--ds-geometry-border-width) solid transparent;
-  font-weight: var(--ds-typography-weight-bold);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ds-geometry-spacing-base);
-}
-
-button:focus-visible {
-  box-shadow: 0 0 0 2px var(--ds-color-background), 0 0 0 4px var(--ds-color-primary);
-  outline: none;
-}
-button:active:not(:disabled) {
-  transform: scale(0.97);
-}
-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: var(--ds-effect-shadow-sm);
-}
-
-/* SIZES */
-button.sm {
-  font-size: var(--ds-typography-size-sm);
-  padding: calc(var(--ds-geometry-spacing-base) * 1.5) calc(var(--ds-geometry-spacing-base) * 3);
-}
-button.md {
-  font-size: var(--ds-typography-size-md);
-  padding: calc(var(--ds-geometry-spacing-base) * 2.5) calc(var(--ds-geometry-spacing-base) * 4);
-}
-button.lg {
-  font-size: var(--ds-typography-size-lg);
-  padding: calc(var(--ds-geometry-spacing-base) * 3.5) calc(var(--ds-geometry-spacing-base) * 6);
-}
-
-/* VARIANTS */
-button.primary {
-  background-color: var(--ds-color-primary);
-  color: var(--ds-color-textInverse);
-}
-button.primary:hover:not(:disabled) {
-  background-color: var(--ds-color-primaryHover);
-}
-
-button.secondary {
-  background-color: var(--ds-color-secondary);
-  color: var(--ds-color-textInverse);
-}
-button.secondary:hover:not(:disabled) {
-  background-color: var(--ds-color-secondaryHover);
-}
-
-button.outline {
-  background-color: transparent;
-  border-color: var(--ds-color-border);
-  color: var(--ds-color-text);
-}
-button.outline:hover:not(:disabled) {
-  background-color: var(--ds-color-surface);
-  border-color: var(--ds-color-primary);
-  color: var(--ds-color-primary);
-}
-
-button.ghost {
-  background-color: transparent;
-  color: var(--ds-color-text);
-}
-button.ghost:hover:not(:disabled) {
-  background-color: var(--ds-color-surface);
-  color: var(--ds-color-primary);
-}
-
-button.link {
-  background-color: transparent;
-  color: var(--ds-color-primary);
-  text-decoration: underline;
-  padding: 0;
-}
-button.link:hover:not(:disabled) {
-  color: var(--ds-color-primaryHover);
-  box-shadow: none;
-  transform: none;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
-}`
-    },
-    {
-      fileName: 'button.component.ts',
-      language: 'typescript',
-      description: 'Angular Component',
-      content: `import { Component, Input } from '@angular/core';
+    fileName: `button.component.ts`,
+    language: 'typescript',
+    description: `Angular Button Component`,
+    content: `
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { IconComponent } from './icon.component';
 
 @Component({
   selector: 'app-button',
-  template: \`<button [class]="variant + ' ' + size" [disabled]="disabled"><ng-content></ng-content></button>\`,
-  styleUrls: ['./button.component.css']
+  standalone: true,
+  imports: [CommonModule, IconComponent],
+  template: \`
+<button [class]="'root ' + variant + ' ' + size" [disabled]="disabled">
+  <app-icon *ngIf="icon" [name]="icon" [size]="size === 'lg' ? 'md' : 'sm'"></app-icon>
+  <ng-content></ng-content>
+</button>
+  \`,
+  styles: [\`
+.root { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: var(--ds-geometry-radius-md); font-weight: 600; cursor: pointer; border: 1px solid transparent; } .primary { background: var(--ds-color-primary); color: white; }
+  \`]
 })
 export class ButtonComponent {
-  @Input() variant: 'primary' | 'secondary' | 'outline' | 'ghost' | 'link' = 'primary';
-  @Input() size: 'sm' | 'md' | 'lg' = 'md';
-  @Input() disabled = false;
-}`
-    }
-  ],
-  input: () => [
-    {
-      fileName: 'input.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `.container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-geometry-spacing-base);
-  font-family: var(--ds-typography-family-base);
-  width: 100%;
+@Input() variant = 'primary'; @Input() size = 'md'; @Input() disabled = false; @Input() icon = '';
 }
-
-.container.disabled {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.label {
-  font-size: var(--ds-typography-size-sm);
-  font-weight: var(--ds-typography-weight-bold);
-  color: var(--ds-color-text);
-  transition: color 0.2s;
-}
-
-.label.error {
-  color: var(--ds-color-error);
-}
-
-.input {
-  width: 100%;
-  padding: calc(var(--ds-geometry-spacing-base) * 2.5) calc(var(--ds-geometry-spacing-base) * 3);
-  border: var(--ds-geometry-border-width) solid var(--ds-color-border);
-  border-radius: var(--ds-geometry-radius-md);
-  background: var(--ds-color-surface);
-  color: var(--ds-color-text);
-  font-family: inherit;
-  outline: none;
-  transition: all 0.2s;
-  box-sizing: border-box;
-  font-size: var(--ds-typography-size-md);
-}
-
-.input:focus {
-  border-color: var(--ds-color-primary);
-  box-shadow: 0 0 0 2px var(--ds-color-primary); 
-}
-
-.input.error {
-  border-color: var(--ds-color-error);
-}
-
-.input.error:focus {
-  box-shadow: 0 0 0 2px var(--ds-color-error); 
-}`
-    },
-    {
-      fileName: 'input.component.ts',
-      language: 'typescript',
-      description: 'Angular Input',
-      content: `import { Component, Input, Output, EventEmitter } from '@angular/core';
-
-@Component({
-  selector: 'app-input',
-  template: \`
-    <div class="container" [class.disabled]="disabled">
-      <label *ngIf="label" class="label" [class.error]="error">{{ label }}</label>
-      <input 
-        class="input"
-        [class.error]="error"
-        [type]="type"
-        [value]="value"
-        [placeholder]="placeholder"
-        [disabled]="disabled"
-        (input)="onInput($event)"
-      />
-    </div>
-  \`,
-  styleUrls: ['./input.component.css']
-})
-export class InputComponent {
-  @Input() label = '';
-  @Input() placeholder = '';
-  @Input() value = '';
-  @Input() type = 'text';
-  @Input() error = false;
-  @Input() disabled = false;
-  @Output() valueChange = new EventEmitter<string>();
-
-  onInput(event: Event) {
-    this.valueChange.emit((event.target as HTMLInputElement).value);
+`.trim()
   }
-}`
-    }
   ],
-  checkbox: () => [
-    {
-      fileName: 'checkbox.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `.container {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(var(--ds-geometry-spacing-base) * 2);
-  font-family: var(--ds-typography-family-base);
-  cursor: pointer;
-}
-
-.container.disabled {
-  opacity: 0.5;
-  pointer-events: none;
-  cursor: not-allowed;
-}
-
-.input {
-  appearance: auto;
-  -webkit-appearance: auto;
-  accent-color: var(--ds-color-primary);
-  width: 1.25rem;
-  height: 1.25rem;
-  cursor: pointer;
-}
-
-.label {
-  font-size: var(--ds-typography-size-md);
-  color: var(--ds-color-text);
-}`
-    },
-    {
-      fileName: 'checkbox.component.ts',
-      language: 'typescript',
-      description: 'Angular Checkbox',
-      content: `import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges } from '@angular/core';
-
-@Component({
-  selector: 'app-checkbox',
-  template: \`
-    <label class="container" [class.disabled]="disabled">
-      <input 
-        #input
-        type="checkbox" 
-        class="input"
-        [checked]="checked"
-        [disabled]="disabled"
-      />
-      <span class="label" *ngIf="label">{{ label }}</span>
-    </label>
-  \`,
-  styleUrls: ['./checkbox.component.css']
-})
-export class CheckboxComponent implements AfterViewInit, OnChanges {
-  @Input() checked = false;
-  @Input() indeterminate = false;
-  @Input() disabled = false;
-  @Input() label = '';
   
-  @ViewChild('input') inputRef!: ElementRef<HTMLInputElement>;
+  icon: () => createAngularFile('Icon', 'app-icon', `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [class]="size" [ngSwitch]="name">
+       <path *ngSwitchCase="'menu'" d="M4 6h16M4 12h16M4 18h16"></path>
+       <g *ngSwitchCase="'search'"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></g>
+       <polyline *ngSwitchCase="'check'" points="20 6 9 17 4 12"></polyline>
+       <g *ngSwitchCase="'info'"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></g>
+       <g *ngSwitchCase="'alert'"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></g>
+       <g *ngSwitchCase="'close'"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></g>
+       <g *ngSwitchCase="'user'"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></g>
+       <g *ngSwitchCase="'home'"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></g>
+       <g *ngSwitchCase="'settings'"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></g>
+    </svg>
+  `, `
+    :host { display: inline-flex; vertical-align: middle; }
+    .sm { width: 1rem; height: 1rem; }
+    .md { width: 1.5rem; height: 1.5rem; }
+    .lg { width: 2rem; height: 2rem; }
+  `, `@Input() name=''; @Input() size='md';`),
 
-  ngAfterViewInit() {
-    this.updateIndeterminate();
-  }
+  'button-group': () => createAngularFile('ButtonGroup', 'app-button-group', `
+    <div [class]="'root ' + orientation">
+      <ng-content></ng-content>
+    </div>
+  `, `
+    :host { display: inline-block; }
+    .root { display: inline-flex; }
+    .vertical { flex-direction: column; }
+    
+    /* Reset radius for all projected children */
+    ::ng-deep .root > * { border-radius: 0 !important; }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.indeterminate && this.inputRef) {
-      this.updateIndeterminate();
+    /* Horizontal Merging */
+    ::ng-deep .root:not(.vertical) > *:first-child { 
+      border-top-left-radius: var(--ds-geometry-radius-md) !important; 
+      border-bottom-left-radius: var(--ds-geometry-radius-md) !important; 
     }
-  }
-
-  private updateIndeterminate() {
-    this.inputRef.nativeElement.indeterminate = this.indeterminate;
-  }
-}`
+    ::ng-deep .root:not(.vertical) > *:last-child { 
+      border-top-right-radius: var(--ds-geometry-radius-md) !important; 
+      border-bottom-right-radius: var(--ds-geometry-radius-md) !important; 
     }
-  ],
-  radio: () => [
-    {
-      fileName: 'radio.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `.container {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(var(--ds-geometry-spacing-base) * 2);
-  font-family: var(--ds-typography-family-base);
-  cursor: pointer;
-}
-
-.container.disabled {
-  opacity: 0.5;
-  pointer-events: none;
-  cursor: not-allowed;
-}
-
-.input {
-  appearance: auto;
-  -webkit-appearance: auto;
-  accent-color: var(--ds-color-primary);
-  width: 1.25rem;
-  height: 1.25rem;
-  cursor: pointer;
-  margin: 0;
-}
-
-.label {
-  font-size: var(--ds-typography-size-md);
-  color: var(--ds-color-text);
-}`
-    },
-    {
-      fileName: 'radio.component.ts',
-      language: 'typescript',
-      description: 'Angular Radio',
-      content: `import { Component, Input, Output, EventEmitter } from '@angular/core';
-
-@Component({
-  selector: 'app-radio',
-  template: \`
-    <label class="container" [class.disabled]="disabled">
-      <input 
-        type="radio" 
-        class="input"
-        [name]="name"
-        [value]="value"
-        [checked]="checked"
-        [disabled]="disabled"
-        (change)="onChange($event)"
-      />
-      <span class="label" *ngIf="label">{{ label }}</span>
-    </label>
-  \`,
-  styleUrls: ['./radio.component.css']
-})
-export class RadioComponent {
-  @Input() checked = false;
-  @Input() disabled = false;
-  @Input() label = '';
-  @Input() value = '';
-  @Input() name = '';
-  @Output() checkedChange = new EventEmitter<any>();
-
-  onChange(event: Event) {
-    if ((event.target as HTMLInputElement).checked) {
-      this.checkedChange.emit(this.value);
+    ::ng-deep .root:not(.vertical) > *:not(:first-child) { 
+      margin-left: -1px; 
     }
-  }
-}`
+    
+    /* Vertical Merging */
+    ::ng-deep .root.vertical > *:first-child { 
+      border-top-left-radius: var(--ds-geometry-radius-md) !important; 
+      border-top-right-radius: var(--ds-geometry-radius-md) !important; 
     }
-  ],
-  'radio-group': () => [
-    {
-      fileName: 'radio-group.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `.fieldset {
-  border: none;
-  padding: 0;
-  margin: 0;
-  font-family: var(--ds-typography-family-base);
-}
+    ::ng-deep .root.vertical > *:last-child { 
+      border-bottom-left-radius: var(--ds-geometry-radius-md) !important; 
+      border-bottom-right-radius: var(--ds-geometry-radius-md) !important; 
+    }
+    ::ng-deep .root.vertical > *:not(:first-child) { 
+      margin-top: -1px; 
+    }
+  `, `@Input() orientation: 'horizontal' | 'vertical' = 'horizontal';`),
 
-.legend {
-  font-size: var(--ds-typography-size-sm);
-  font-weight: var(--ds-typography-weight-bold);
-  color: var(--ds-color-text);
-  margin-bottom: var(--ds-geometry-spacing-base);
-}
+  'input-group': () => createAngularFile('InputGroup', 'app-input-group', `
+    <div class="root">
+      <ng-content></ng-content>
+    </div>
+  `, `
+    :host { display: block; width: 100%; }
+    .root { display: flex; align-items: stretch; width: 100%; }
+    
+    ::ng-deep .root > * { border-radius: 0 !important; }
 
-.group {
-  display: flex;
-  gap: calc(var(--ds-geometry-spacing-base) * 2);
-}
+    ::ng-deep .root > *:first-child { border-top-left-radius: var(--ds-geometry-radius-md) !important; border-bottom-left-radius: var(--ds-geometry-radius-md) !important; }
+    ::ng-deep .root > *:last-child { border-top-right-radius: var(--ds-geometry-radius-md) !important; border-bottom-right-radius: var(--ds-geometry-radius-md) !important; }
+    
+    ::ng-deep .root > *:not(:first-child) { margin-left: -1px; }
+  `, ``),
 
-.vertical {
-  flex-direction: column;
-}
-
-.horizontal {
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.error {
-  margin-top: var(--ds-geometry-spacing-base);
-  font-size: var(--ds-typography-size-sm);
-  color: var(--ds-color-error);
-}`
-    },
-    {
-      fileName: 'radio-group.component.ts',
-      language: 'typescript',
-      description: 'Angular Radio Group',
-      content: `import { Component, Input } from '@angular/core';
-
-@Component({
-  selector: 'app-radio-group',
-  template: \`
-    <fieldset class="fieldset">
-      <legend class="legend" *ngIf="label">{{ label }}</legend>
-      <div class="group" [class.vertical]="direction === 'vertical'" [class.horizontal]="direction === 'horizontal'">
-        <ng-content></ng-content>
+  input: () => createAngularFile('Input', 'app-input', `<input [type]="type" [placeholder]="placeholder" class="input" />`, `.input { width: 100%; padding: 0.5rem; border: 1px solid var(--ds-color-border); border-radius: var(--ds-geometry-radius-md); }`, `@Input() type='text'; @Input() placeholder='';`),
+  card: () => createAngularFile('Card', 'app-card', `<div class="card"><ng-content></ng-content></div>`, `.card { background: var(--ds-color-surface); border: 1px solid var(--ds-color-border); border-radius: var(--ds-geometry-radius-lg); padding: 1.5rem; }`, ``),
+  badge: () => createAngularFile('Badge', 'app-badge', `<span [class]="'badge ' + variant"><ng-content></ng-content></span>`, `.badge { padding: 0.25em 0.75em; border-radius: var(--ds-geometry-radius-sm); font-size: 0.75rem; font-weight: 500; } .primary { background: var(--ds-color-primary); color: white; }`, `@Input() variant='primary';`),
+  switch: () => createAngularFile('Switch', 'app-switch', `<button [class.checked]="checked" (click)="checked=!checked" class="track"><span class="thumb"></span></button>`, `.track { width: 2.5rem; height: 1.25rem; background: var(--ds-color-secondary); border-radius: 99px; position: relative; } .checked { background: var(--ds-color-primary); } .thumb { width: 1rem; height: 1rem; background: white; border-radius: 50%; position: absolute; left: 0.125rem; transition: 0.2s; } .checked .thumb { transform: translateX(1.25rem); }`, `@Input() checked=false;`),
+  select: () => createAngularFile('Select', 'app-select', `<div class="wrapper"><ng-content></ng-content></div>`, `.wrapper { position: relative; }`, ``),
+  tabs: () => createAngularFile('Tabs', 'app-tabs', `<div class="tabs"><div class="list"><button *ngFor="let t of tabs">{{t.label}}</button></div><ng-content></ng-content></div>`, `.list { display: flex; gap: 1rem; border-bottom: 1px solid var(--ds-color-border); }`, `@Input() tabs: any[] = [];`),
+  modal: () => createAngularFile('Modal', 'app-modal', `<div *ngIf="open" class="overlay"><div class="dialog"><ng-content></ng-content></div></div>`, `.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; } .dialog { background: white; padding: 1.5rem; }`, `@Input() open=false;`),
+  avatar: () => createAngularFile('Avatar', 'app-avatar', `<div class="avatar"><ng-content></ng-content></div>`, `.avatar { overflow: hidden; border-radius: 50%; width: 3rem; height: 3rem; background: #eee; }`, ``),
+  navbar: () => createAngularFile('Navbar', 'app-navbar', `<nav><ng-content></ng-content></nav>`, `nav { border-bottom: 1px solid var(--ds-color-border); padding: 1rem; }`, ``),
+  drawer: () => createAngularFile('Drawer', 'app-drawer', `<div *ngIf="open" class="panel"><ng-content></ng-content></div>`, `.panel { position: fixed; top: 0; right: 0; bottom: 0; width: 300px; background: white; box-shadow: -2px 0 5px rgba(0,0,0,0.1); }`, `@Input() open=false;`),
+  typography: () => createAngularFile('Typography', 'app-typography', `<p [class]="variant"><ng-content></ng-content></p>`, `.body1 { font-size: 1rem; }`, `@Input() variant='body1';`),
+  'form-field': () => createAngularFile('FormField', 'app-form-field', `<div class="root"><label>{{label}}</label><ng-content></ng-content><div *ngIf="error" class="error">{{error}}</div></div>`, `.root { display: flex; flex-direction: column; gap: 0.25rem; } .error { color: var(--ds-color-error); font-size: 0.75rem; }`, `@Input() label=''; @Input() error='';`),
+  'search-box': () => createAngularFile('SearchBox', 'app-search-box', `<div class="wrapper"><div class="icon">🔍</div><ng-content></ng-content></div>`, `.wrapper { position: relative; } .icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); }`, ``),
+  
+  alert: () => createAngularFile('Alert', 'app-alert', `
+    <div [class]="'root ' + variant">
+      <div class="icon" [ngSwitch]="variant">
+        <svg *ngSwitchCase="'info'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        <svg *ngSwitchCase="'success'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <svg *ngSwitchCase="'warning'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <svg *ngSwitchCase="'error'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
       </div>
-      <div class="error" *ngIf="error">{{ error }}</div>
-    </fieldset>
-  \`,
-  styleUrls: ['./radio-group.component.css']
-})
-export class RadioGroupComponent {
-  @Input() label = '';
-  @Input() error = '';
-  @Input() direction: 'vertical' | 'horizontal' = 'vertical';
-}`
-    }
-  ],
-  alert: () => [
-    {
-      fileName: 'alert.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `.alert {
-  padding: calc(var(--ds-geometry-spacing-base) * 3);
-  border-radius: var(--ds-geometry-radius-md);
-  border: 1px solid transparent;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-geometry-spacing-base);
-  font-family: var(--ds-typography-family-base);
-  width: 100%;
-}
-
-.title {
-  font-weight: var(--ds-typography-weight-bold);
-  font-size: var(--ds-typography-size-md);
-  line-height: 1.4;
-}
-
-.content {
-  font-size: var(--ds-typography-size-sm);
-  line-height: 1.5;
-}
-
-.info {
-  background-color: color-mix(in srgb, var(--ds-color-info) 10%, var(--ds-color-surface));
-  border-color: color-mix(in srgb, var(--ds-color-info) 30%, transparent);
-  color: var(--ds-color-text);
-}
-.info .title { color: var(--ds-color-info); }
-
-.success {
-  background-color: color-mix(in srgb, var(--ds-color-success) 10%, var(--ds-color-surface));
-  border-color: color-mix(in srgb, var(--ds-color-success) 30%, transparent);
-  color: var(--ds-color-text);
-}
-.success .title { color: var(--ds-color-success); }
-
-.warning {
-  background-color: color-mix(in srgb, var(--ds-color-warning) 10%, var(--ds-color-surface));
-  border-color: color-mix(in srgb, var(--ds-color-warning) 30%, transparent);
-  color: var(--ds-color-text);
-}
-.warning .title { color: var(--ds-color-warning); }
-
-.error {
-  background-color: color-mix(in srgb, var(--ds-color-error) 10%, var(--ds-color-surface));
-  border-color: color-mix(in srgb, var(--ds-color-error) 30%, transparent);
-  color: var(--ds-color-text);
-}
-.error .title { color: var(--ds-color-error); }`
-    },
-    {
-      fileName: 'alert.component.ts',
-      language: 'typescript',
-      description: 'Angular Alert',
-      content: `import { Component, Input } from '@angular/core';
-
-@Component({
-  selector: 'app-alert',
-  template: \`
-    <div class="alert" [ngClass]="variant">
-      <div class="title" *ngIf="title">{{ title }}</div>
       <div class="content"><ng-content></ng-content></div>
     </div>
-  \`,
-  styleUrls: ['./alert.component.css']
-})
-export class AlertComponent {
-  @Input() variant: 'info' | 'success' | 'warning' | 'error' = 'info';
-  @Input() title = '';
-}`
+  `, `
+    .root {
+      display: flex; gap: 0.75rem; align-items: flex-start;
+      padding: 1rem;
+      border: 1px solid var(--ds-color-border);
+      border-radius: var(--ds-geometry-radius-md);
+      color: var(--ds-color-text);
+      font-family: var(--ds-typography-family-base);
     }
-  ],
-  switch: () => [
-    {
-      fileName: 'switch.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `.container {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(var(--ds-geometry-spacing-base) * 2);
-  font-family: var(--ds-typography-family-base);
-  cursor: pointer;
-}
+    .icon { margin-top: 0.125rem; flex-shrink: 0; display: flex; }
+    .content { flex: 1; font-size: 0.875rem; line-height: 1.5; }
 
-.container.disabled {
-  opacity: 0.5;
-  pointer-events: none;
-  cursor: not-allowed;
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 2.75rem;
-  height: 1.5rem;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--ds-color-secondary);
-  transition: .4s;
-  border-radius: 2rem;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 1.125rem;
-  width: 1.125rem;
-  left: 0.1875rem;
-  bottom: 0.1875rem;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
-}
-
-input:checked + .slider {
-  background-color: var(--ds-color-primary);
-}
-
-input:checked + .slider:before {
-  transform: translateX(1.25rem);
-}
-
-input:focus-visible + .slider {
-  box-shadow: 0 0 0 2px var(--ds-color-background), 0 0 0 4px var(--ds-color-primary);
-}
-
-.label {
-  font-size: var(--ds-typography-size-md);
-  color: var(--ds-color-text);
-}`
-    },
-    {
-      fileName: 'switch.component.ts',
-      language: 'typescript',
-      description: 'Angular Switch',
-      content: `import { Component, Input, Output, EventEmitter } from '@angular/core';
-
-@Component({
-  selector: 'app-switch',
-  template: \`
-    <label class="container" [class.disabled]="disabled">
-      <div class="switch">
-        <input 
-          type="checkbox" 
-          [checked]="checked"
-          [disabled]="disabled"
-          (change)="onChange($event)"
-        />
-        <span class="slider"></span>
-      </div>
-      <span class="label" *ngIf="label">{{ label }}</span>
-    </label>
-  \`,
-  styleUrls: ['./switch.component.css']
-})
-export class SwitchComponent {
-  @Input() checked = false;
-  @Input() disabled = false;
-  @Input() label = '';
-  @Output() checkedChange = new EventEmitter<boolean>();
-
-  onChange(event: Event) {
-    this.checkedChange.emit((event.target as HTMLInputElement).checked);
-  }
-}`
+    .info {
+      background: color-mix(in srgb, var(--ds-color-info), transparent 90%);
+      border-color: color-mix(in srgb, var(--ds-color-info), transparent 80%);
     }
-  ],
-  badge: () => [
-    {
-      fileName: 'badge.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: calc(var(--ds-geometry-spacing-base) * 0.5) calc(var(--ds-geometry-spacing-base) * 2);
-  border-radius: var(--ds-geometry-radius-lg);
-  font-family: var(--ds-typography-family-base);
-  font-size: var(--ds-typography-size-sm);
-  font-weight: var(--ds-typography-weight-bold);
-  line-height: 1;
-  white-space: nowrap;
-  border: 1px solid transparent;
-}
-
-.primary {
-  background-color: var(--ds-color-primary);
-  color: var(--ds-color-textInverse);
-}
-
-.secondary {
-  background-color: var(--ds-color-secondary);
-  color: var(--ds-color-textInverse);
-}
-
-.outline {
-  background-color: transparent;
-  border-color: var(--ds-color-border);
-  color: var(--ds-color-text);
-}
-
-.success {
-  background-color: var(--ds-color-success);
-  color: #fff;
-}
-
-.warning {
-  background-color: var(--ds-color-warning);
-  color: #fff;
-}
-
-.error {
-  background-color: var(--ds-color-error);
-  color: #fff;
-}
-
-.info {
-  background-color: var(--ds-color-info);
-  color: #fff;
-}`
-    },
-    {
-      fileName: 'badge.component.ts',
-      language: 'typescript',
-      description: 'Angular Badge',
-      content: `import { Component, Input } from '@angular/core';
-
-@Component({
-  selector: 'app-badge',
-  template: \`<span class="badge" [ngClass]="variant"><ng-content></ng-content></span>\`,
-  styleUrls: ['./badge.component.css']
-})
-export class BadgeComponent {
-  @Input() variant: 'primary' | 'secondary' | 'outline' | 'success' | 'warning' | 'error' | 'info' = 'primary';
-}`
+    .success {
+      background: color-mix(in srgb, var(--ds-color-success), transparent 90%);
+      border-color: color-mix(in srgb, var(--ds-color-success), transparent 80%);
     }
-  ],
-  'checkbox-group': () => [
-    {
-      fileName: 'checkbox-group.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `.fieldset {
-  border: none;
-  padding: 0;
-  margin: 0;
-  font-family: var(--ds-typography-family-base);
-}
-
-.legend {
-  font-size: var(--ds-typography-size-sm);
-  font-weight: var(--ds-typography-weight-bold);
-  color: var(--ds-color-text);
-  margin-bottom: var(--ds-geometry-spacing-base);
-}
-
-.group {
-  display: flex;
-  gap: calc(var(--ds-geometry-spacing-base) * 2);
-}
-
-.vertical {
-  flex-direction: column;
-}
-
-.horizontal {
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.error {
-  margin-top: var(--ds-geometry-spacing-base);
-  font-size: var(--ds-typography-size-sm);
-  color: var(--ds-color-error);
-}`
-    },
-    {
-      fileName: 'checkbox-group.component.ts',
-      language: 'typescript',
-      description: 'Angular Checkbox Group',
-      content: `import { Component, Input } from '@angular/core';
-
-@Component({
-  selector: 'app-checkbox-group',
-  template: \`
-    <fieldset class="fieldset">
-      <legend class="legend" *ngIf="label">{{ label }}</legend>
-      <div class="group" [class.vertical]="direction === 'vertical'" [class.horizontal]="direction === 'horizontal'">
-        <ng-content></ng-content>
-      </div>
-      <div class="error" *ngIf="error">{{ error }}</div>
-    </fieldset>
-  \`,
-  styleUrls: ['./checkbox-group.component.css']
-})
-export class CheckboxGroupComponent {
-  @Input() label = '';
-  @Input() error = '';
-  @Input() direction: 'vertical' | 'horizontal' = 'vertical';
-}`
+    .warning {
+      background: color-mix(in srgb, var(--ds-color-warning), transparent 90%);
+      border-color: color-mix(in srgb, var(--ds-color-warning), transparent 80%);
     }
-  ],
-  card: () => [
-    {
-      fileName: 'card.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `.card {
-  display: block;
-  background: var(--ds-color-surface);
-  border-radius: var(--ds-geometry-radius-lg);
-  border: var(--ds-geometry-border-width) solid var(--ds-color-border);
-  font-family: var(--ds-typography-family-base);
-  color: var(--ds-color-text);
-  overflow: hidden;
-  box-shadow: var(--ds-effect-shadow-md);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.card:hover:not(.disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-}
-
-.card.disabled {
-  opacity: 0.7;
-  pointer-events: none;
-  filter: grayscale(0.5);
-}
-
-.header {
-  padding: calc(var(--ds-geometry-spacing-base) * 4);
-  border-bottom: 1px solid var(--ds-color-border);
-  font-weight: var(--ds-typography-weight-bold);
-  font-size: var(--ds-typography-size-lg);
-}
-
-.body {
-  padding: calc(var(--ds-geometry-spacing-base) * 4);
-}`
-    },
-    {
-      fileName: 'card.component.ts',
-      language: 'typescript',
-      description: 'Angular Card',
-      content: `import { Component, Input } from '@angular/core';
-
-@Component({
-  selector: 'app-card',
-  template: \`
-    <div class="card" [class.disabled]="disabled">
-      <div class="header" *ngIf="title">{{ title }}</div>
-      <div class="body">
-        <ng-content></ng-content>
-      </div>
-    </div>
-  \`,
-  styleUrls: ['./card.component.css']
-})
-export class CardComponent {
-  @Input() title = '';
-  @Input() disabled = false;
-}`
+    .error {
+      background: color-mix(in srgb, var(--ds-color-error), transparent 90%);
+      border-color: color-mix(in srgb, var(--ds-color-error), transparent 80%);
     }
-  ],
-  avatar: () => [
-    {
-      fileName: 'avatar.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `.avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background-color: var(--ds-color-surfaceHighlight);
-  color: var(--ds-color-text);
-  font-family: var(--ds-typography-family-base);
-  font-weight: var(--ds-typography-weight-bold);
-  user-select: none;
-}
-
-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* SIZES */
-.sm { width: 2rem; height: 2rem; font-size: var(--ds-typography-size-xs); }
-.md { width: 3rem; height: 3rem; font-size: var(--ds-typography-size-md); }
-.lg { width: 4rem; height: 4rem; font-size: var(--ds-typography-size-lg); }
-
-/* VARIANTS */
-.circle { border-radius: 50%; }
-.square { border-radius: var(--ds-geometry-radius-sm); }
-.rounded { border-radius: var(--ds-geometry-radius-md); }`
-    },
-    {
-      fileName: 'avatar.component.ts',
-      language: 'typescript',
-      description: 'Angular Avatar',
-      content: `import { Component, Input } from '@angular/core';
-
-@Component({
-  selector: 'app-avatar',
-  template: \`
-    <div class="avatar" [class]="size + ' ' + variant">
-      <img *ngIf="src" [src]="src" [alt]="alt" />
-      <span *ngIf="!src">{{ initials }}</span>
-    </div>
-  \`,
-  styleUrls: ['./avatar.component.css']
-})
-export class AvatarComponent {
-  @Input() src = '';
-  @Input() alt = '';
-  @Input() initials = '';
-  @Input() size: 'sm' | 'md' | 'lg' = 'md';
-  @Input() variant: 'circle' | 'square' | 'rounded' = 'circle';
-}`
-    }
-  ],
-  spinner: () => [
-    {
-      fileName: 'spinner.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `.spinner {
-  display: inline-block;
-  border: 3px solid rgba(0,0,0,0.1);
-  border-radius: 50%;
-  border-top-color: var(--ds-color-primary);
-  animation: spin 1s linear infinite;
-}
-
-.secondary {
-  border-top-color: var(--ds-color-secondary);
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.sm { width: 1rem; height: 1rem; border-width: 2px; }
-.md { width: 2rem; height: 2rem; border-width: 3px; }
-.lg { width: 3rem; height: 3rem; border-width: 4px; }`
-    },
-    {
-      fileName: 'spinner.component.ts',
-      language: 'typescript',
-      description: 'Angular Spinner',
-      content: `import { Component, Input } from '@angular/core';
-
-@Component({
-  selector: 'app-spinner',
-  template: \`<div class="spinner" [class]="size" [class.secondary]="variant === 'secondary'"></div>\`,
-  styleUrls: ['./spinner.component.css']
-})
-export class SpinnerComponent {
-  @Input() size: 'sm' | 'md' | 'lg' = 'md';
-  @Input() variant: 'primary' | 'secondary' = 'primary';
-}`
-    }
-  ],
-  divider: () => [
-    {
-      fileName: 'divider.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `.divider {
-  display: block;
-  background-color: var(--ds-color-border);
-}
-
-.horizontal {
-  height: 1px;
-  width: 100%;
-  margin: var(--ds-geometry-spacing-base) 0;
-}
-
-.vertical {
-  width: 1px;
-  height: 100%;
-  min-height: 1em;
-  display: inline-block;
-  margin: 0 var(--ds-geometry-spacing-base);
-}`
-    },
-    {
-      fileName: 'divider.component.ts',
-      language: 'typescript',
-      description: 'Angular Divider',
-      content: `import { Component, Input } from '@angular/core';
-
-@Component({
-  selector: 'app-divider',
-  template: \`<div class="divider" [class]="orientation"></div>\`,
-  styleUrls: ['./divider.component.css']
-})
-export class DividerComponent {
-  @Input() orientation: 'horizontal' | 'vertical' = 'horizontal';
-}`
-    }
-  ],
-  heading: () => [
-    {
-      fileName: 'heading.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `.heading {
-  display: block;
-  font-family: var(--ds-typography-family-base);
-  color: var(--ds-color-text);
-  margin: 0;
-}
-
-.h1 { font-size: var(--ds-typography-variants-h1-fontSize); font-weight: var(--ds-typography-variants-h1-fontWeight); line-height: var(--ds-typography-variants-h1-lineHeight); }
-.h2 { font-size: var(--ds-typography-variants-h2-fontSize); font-weight: var(--ds-typography-variants-h2-fontWeight); line-height: var(--ds-typography-variants-h2-lineHeight); }
-.h3 { font-size: var(--ds-typography-variants-h3-fontSize); font-weight: var(--ds-typography-variants-h3-fontWeight); line-height: var(--ds-typography-variants-h3-lineHeight); }
-.h4 { font-size: var(--ds-typography-variants-h4-fontSize); font-weight: var(--ds-typography-variants-h4-fontWeight); line-height: var(--ds-typography-variants-h4-lineHeight); }
-.h5 { font-size: var(--ds-typography-variants-h5-fontSize); font-weight: var(--ds-typography-variants-h5-fontWeight); line-height: var(--ds-typography-variants-h5-lineHeight); }
-.h6 { font-size: var(--ds-typography-variants-h6-fontSize); font-weight: var(--ds-typography-variants-h6-fontWeight); line-height: var(--ds-typography-variants-h6-lineHeight); }
-.subtitle1 { font-size: var(--ds-typography-variants-subtitle1-fontSize); font-weight: var(--ds-typography-variants-subtitle1-fontWeight); line-height: var(--ds-typography-variants-subtitle1-lineHeight); }
-.subtitle2 { font-size: var(--ds-typography-variants-subtitle2-fontSize); font-weight: var(--ds-typography-variants-subtitle2-fontWeight); line-height: var(--ds-typography-variants-subtitle2-lineHeight); }
-
-.primary { color: var(--ds-color-primary); }
-.secondary { color: var(--ds-color-secondary); }`
-    },
-    {
-      fileName: 'heading.component.ts',
-      language: 'typescript',
-      description: 'Angular Heading',
-      content: `import { Component, Input } from '@angular/core';
-
-@Component({
-  selector: 'app-heading',
-  template: \`
-    <ng-container [ngSwitch]="variant">
-      <h1 *ngSwitchCase="'h1'" class="heading" [ngClass]="[variant, color]"><ng-content></ng-content></h1>
-      <h2 *ngSwitchCase="'h2'" class="heading" [ngClass]="[variant, color]"><ng-content></ng-content></h2>
-      <h3 *ngSwitchCase="'h3'" class="heading" [ngClass]="[variant, color]"><ng-content></ng-content></h3>
-      <h4 *ngSwitchCase="'h4'" class="heading" [ngClass]="[variant, color]"><ng-content></ng-content></h4>
-      <h5 *ngSwitchCase="'h5'" class="heading" [ngClass]="[variant, color]"><ng-content></ng-content></h5>
-      <h6 *ngSwitchDefault class="heading" [ngClass]="[variant, color]"><ng-content></ng-content></h6>
-    </ng-container>
-  \`,
-  styleUrls: ['./heading.component.css']
-})
-export class HeadingComponent {
-  @Input() variant: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'subtitle1' | 'subtitle2' = 'h1';
-  @Input() color: 'default' | 'primary' | 'secondary' = 'default';
-}`
-    }
-  ],
-  text: () => [
-    {
-      fileName: 'text.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `.text {
-  display: block;
-  font-family: var(--ds-typography-family-base);
-  color: var(--ds-color-text);
-  margin: 0;
-}
-
-.body1 { font-size: var(--ds-typography-variants-body1-fontSize); line-height: var(--ds-typography-variants-body1-lineHeight); }
-.body2 { font-size: var(--ds-typography-variants-body2-fontSize); line-height: var(--ds-typography-variants-body2-lineHeight); }
-.caption { font-size: var(--ds-typography-variants-caption-fontSize); line-height: var(--ds-typography-variants-caption-lineHeight); }
-
-.light { font-weight: var(--ds-typography-weight-light); }
-.normal { font-weight: var(--ds-typography-weight-normal); }
-.medium { font-weight: var(--ds-typography-weight-medium); }
-.bold { font-weight: var(--ds-typography-weight-bold); }
-
-.dim { color: var(--ds-color-textDim); }
-.primary { color: var(--ds-color-primary); }
-.secondary { color: var(--ds-color-secondary); }
-.error { color: var(--ds-color-error); }
-.success { color: var(--ds-color-success); }`
-    },
-    {
-      fileName: 'text.component.ts',
-      language: 'typescript',
-      description: 'Angular Text',
-      content: `import { Component, Input } from '@angular/core';
-
-@Component({
-  selector: 'app-text',
-  template: \`<p class="text" [ngClass]="[variant, weight, color]"><ng-content></ng-content></p>\`,
-  styleUrls: ['./text.component.css']
-})
-export class TextComponent {
-  @Input() variant: 'body1' | 'body2' | 'caption' = 'body1';
-  @Input() weight: 'light' | 'normal' | 'medium' | 'bold' = 'normal';
-  @Input() color: 'default' | 'dim' | 'primary' | 'secondary' | 'error' | 'success' = 'default';
-}`
-    }
-  ],
-  link: () => [
-    {
-      fileName: 'link.component.css',
-      language: 'css',
-      description: 'Angular Styles',
-      content: `a {
-  font-family: var(--ds-typography-family-base);
-  color: var(--ds-color-primary);
-  text-decoration: underline;
-  cursor: pointer;
-  font-weight: var(--ds-typography-weight-medium);
-  transition: color 0.2s;
-}
-a:hover {
-  color: var(--ds-color-primaryHover);
-}
-
-.discrete {
-  color: var(--ds-color-text);
-  text-decoration: none;
-}
-.discrete:hover {
-  text-decoration: underline;
-  color: var(--ds-color-primary);
-}`
-    },
-    {
-      fileName: 'link.component.ts',
-      language: 'typescript',
-      description: 'Angular Link',
-      content: `import { Component, Input } from '@angular/core';
-
-@Component({
-  selector: 'app-link',
-  template: \`<a [href]="href" [target]="target" [ngClass]="{discrete: variant === 'discrete'}"><ng-content></ng-content></a>\`,
-  styleUrls: ['./link.component.css']
-})
-export class LinkComponent {
-  @Input() href = '#';
-  @Input() target = '_self';
-  @Input() variant: 'default' | 'discrete' = 'default';
-}`
-    }
-  ]
+  `, `@Input() variant='info';`)
 };

@@ -48,3 +48,38 @@ export async function generateThemeFromDescription(description: string): Promise
     throw error;
   }
 }
+
+export async function runAccessibilityAudit(tokens: DesignTokens): Promise<string> {
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    // We send a simplified version of tokens to avoid hitting token limits if necessary, 
+    // but usually DesignTokens JSON is small enough.
+    const tokensStr = JSON.stringify(tokens, null, 2);
+
+    const prompt = `
+      Analyze the following Design System Tokens for WCAG 2.1 AA Accessibility compliance.
+      
+      Focus on:
+      1. **Color Contrast**: Check if 'text' colors have sufficient contrast against 'background' and 'surface'. Check if 'primary' color is accessible on white/surface.
+      2. **Typography**: Check if base font sizes and line heights are readable.
+      3. **Semantic Integrity**: Are the status colors (error, success) distinguishable for color-blind users (based on hex values)?
+
+      Provide the report in Markdown format. Use emojis for Pass/Fail/Warn.
+      
+      Tokens:
+      ${tokensStr}
+    `;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
+
+    return response.text || "Failed to generate audit report.";
+
+  } catch (error) {
+    console.error("Gemini Audit Error:", error);
+    return "Error running accessibility audit. Please check your API key.";
+  }
+}

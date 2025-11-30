@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export interface W3CToken {
@@ -120,6 +121,22 @@ export interface DesignTokens {
   };
 }
 
+export interface Theme {
+  id: string;
+  name: string;
+  mode: 'light' | 'dark';
+  tokens: DesignTokens;
+}
+
+export interface Brand {
+  id: string;
+  name: string;
+  description?: string;
+  themes: Theme[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface TypographyVariant {
   fontSize: W3CToken;
   fontWeight: W3CToken;
@@ -135,7 +152,34 @@ export interface GeneratedFile {
 
 export type GenerationStrategy = 'web-component' | 'native-react' | 'native-angular';
 
-export type ComponentType = 'button' | 'checkbox' | 'checkbox-group' | 'input' | 'card' | 'badge' | 'switch' | 'radio' | 'radio-group' | 'alert' | 'avatar' | 'spinner' | 'divider' | 'text' | 'heading' | 'link';
+export type ComponentType = 
+  | 'button' 
+  | 'checkbox' 
+  | 'checkbox-group' 
+  | 'input' 
+  | 'card' 
+  | 'badge' 
+  | 'switch' 
+  | 'radio' 
+  | 'radio-group' 
+  | 'alert' 
+  | 'avatar' 
+  | 'spinner' 
+  | 'divider' 
+  | 'typography'
+  | 'link'
+  | 'label'
+  | 'icon'
+  | 'image'
+  | 'select'
+  | 'search-box'
+  | 'form-field'
+  | 'button-group'
+  | 'input-group'
+  | 'tabs'
+  | 'modal'
+  | 'drawer'
+  | 'navbar';
 
 export interface ComponentDefinition {
   id: ComponentType;
@@ -180,9 +224,22 @@ declare module 'react' {
       'ds-avatar': any;
       'ds-spinner': any;
       'ds-divider': any;
-      'ds-text': any;
-      'ds-heading': any;
+      'ds-typography': any;
       'ds-link': any;
+      'ds-label': any;
+      'ds-icon': any;
+      'ds-image': any;
+      'ds-select': any;
+      'ds-search-box': any;
+      'ds-form-field': any;
+      'ds-button-group': any;
+      'ds-input-group': any;
+      'ds-tabs': any;
+      'ds-tab': any;
+      'ds-tab-panel': any;
+      'ds-modal': any;
+      'ds-drawer': any;
+      'ds-navbar': any;
     }
   }
 }
@@ -203,9 +260,22 @@ declare global {
       'ds-avatar': any;
       'ds-spinner': any;
       'ds-divider': any;
-      'ds-text': any;
-      'ds-heading': any;
+      'ds-typography': any;
       'ds-link': any;
+      'ds-label': any;
+      'ds-icon': any;
+      'ds-image': any;
+      'ds-select': any;
+      'ds-search-box': any;
+      'ds-form-field': any;
+      'ds-button-group': any;
+      'ds-input-group': any;
+      'ds-tabs': any;
+      'ds-tab': any;
+      'ds-tab-panel': any;
+      'ds-modal': any;
+      'ds-drawer': any;
+      'ds-navbar': any;
     }
   }
 }

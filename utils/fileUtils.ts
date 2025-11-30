@@ -1,23 +1,21 @@
 import { GeneratedFile } from '../types';
+import JSZip from 'jszip';
 
-export function downloadFile(file: GeneratedFile) {
-  const blob = new Blob([file.content], { type: 'text/plain' });
+export async function downloadAsZip(files: GeneratedFile[], archiveName: string = 'design-system.zip') {
+  const zip = new JSZip();
+
+  files.forEach((file) => {
+    zip.file(file.fileName, file.content);
+  });
+
+  const blob = await zip.generateAsync({ type: 'blob' });
+  
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = file.fileName;
+  link.download = archiveName;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
-}
-
-export function downloadAllFiles(files: GeneratedFile[]) {
-  // In a real app, this would zip the files. 
-  // For this environment, we will trigger individual downloads with a slight delay.
-  files.forEach((file, index) => {
-    setTimeout(() => {
-      downloadFile(file);
-    }, index * 200);
-  });
 }
